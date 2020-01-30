@@ -43,6 +43,8 @@ func main() {
 	modifyTime := formatedTime.Format(http.TimeFormat)
 
 	fmt.Println(modifyTime)
+
+	fmt.Println("ts2Date", time.Unix(1579501678, 0))
 }
 
 func getLastWednesday(date time.Time) (day time.Time) {
