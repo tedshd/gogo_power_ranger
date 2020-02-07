@@ -10,31 +10,54 @@ import (
     "encoding/json"
 )
 
-type YoutubeInfo struct {
-    Category    interface{} `json:"category"`
-    Description string      `json:"description"`
-    Error       bool        `json:"error"`
-    Errors      string      `json:"errors"`
-    ID          string      `json:"id"`
-    Tags        []string    `json:"tags"`
-    Thumbnails  struct {
-        Default struct {
-            Height int    `json:"height"`
-            URL    string `json:"url"`
-            Width  int    `json:"width"`
-        } `json:"default"`
-        High struct {
-            Height int    `json:"height"`
-            URL    string `json:"url"`
-            Width  int    `json:"width"`
-        } `json:"high"`
-        Medium struct {
-            Height int    `json:"height"`
-            URL    string `json:"url"`
-            Width  int    `json:"width"`
-        } `json:"medium"`
-    } `json:"thumbnails"`
-    Title string `json:"title"`
+type YoutubeResponse struct {
+	Kind     string `json:"kind"`
+	Etag     string `json:"etag"`
+	PageInfo struct {
+		TotalResults   int `json:"totalResults"`
+		ResultsPerPage int `json:"resultsPerPage"`
+	} `json:"pageInfo"`
+	Items []struct {
+		Kind    string `json:"kind"`
+		Etag    string `json:"etag"`
+		ID      string `json:"id"`
+		Snippet struct {
+			PublishedAt time.Time `json:"publishedAt"`
+			ChannelID   string    `json:"channelId"`
+			Title       string    `json:"title"`
+			Description string    `json:"description"`
+			Thumbnails  struct {
+				Default struct {
+					URL    string `json:"url"`
+					Width  int    `json:"width"`
+					Height int    `json:"height"`
+				} `json:"default"`
+				Medium struct {
+					URL    string `json:"url"`
+					Width  int    `json:"width"`
+					Height int    `json:"height"`
+				} `json:"medium"`
+				High struct {
+					URL    string `json:"url"`
+					Width  int    `json:"width"`
+					Height int    `json:"height"`
+				} `json:"high"`
+				Standard struct {
+					URL    string `json:"url"`
+					Width  int    `json:"width"`
+					Height int    `json:"height"`
+				} `json:"standard"`
+			} `json:"thumbnails"`
+			ChannelTitle         string   `json:"channelTitle"`
+			Tags                 []string `json:"tags"`
+			CategoryID           string   `json:"categoryId"`
+			LiveBroadcastContent string   `json:"liveBroadcastContent"`
+			Localized            struct {
+				Title       string `json:"title"`
+				Description string `json:"description"`
+			} `json:"localized"`
+		} `json:"snippet"`
+	} `json:"items"`
 }
 
 func check(e error) {
@@ -45,37 +68,37 @@ func check(e error) {
 
 func main() {
     youtubeId := os.Args[1]
+    // youtubeId := "A8iFrfCxbYs"
+    youtubeAPIKey := ""
 
     fmt.Println("youtubeId: ", youtubeId)
     date := time.Now().Format("2006-01-02T15:04:05-0700")
     fmt.Println("date: ", date)
 
-    resp, err := http.Get("https://tedshd.io/service/youtube_info/function.php?id=" + youtubeId + "&format=json")
+    resp, err := http.Get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + youtubeId + "&key=" + youtubeAPIKey)
 	if err != nil {
 		fmt.Println("http get Error: ", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-    var youtubeinfo = &YoutubeInfo{}
+    var YoutubeResponse = &YoutubeResponse{}
 
-	errUnmarshal := json.Unmarshal(body, youtubeinfo)
+	errUnmarshal := json.Unmarshal(body, YoutubeResponse)
 	if errUnmarshal != nil {
 		fmt.Println("errUnmarshal: ", errUnmarshal)
-	}
-    // fmt.Printf("%+v", youtubeinfo)
-    fmt.Println(youtubeinfo.Error)
-    if youtubeinfo.Error == true {
-        fmt.Println("get youtubeinfo: ", youtubeinfo.Errors)
-        return
     }
+
+    // fmt.Printf("%+v", YoutubeResponse)
+
+    youtubeinfo := YoutubeResponse.Items[0].Snippet
 
     titleOrigin := strings.Split(youtubeinfo.Title, "|")
     title := strings.TrimSpace(titleOrigin[0])
 
     fmt.Println(title)
     fmt.Println(youtubeinfo.Description)
-    fmt.Println(youtubeinfo.ID)
+    fmt.Println(YoutubeResponse.Items[0].ID)
     fmt.Println(youtubeinfo.Tags)
     fmt.Println(youtubeinfo.Thumbnails.High.URL)
 
@@ -111,7 +134,7 @@ func main() {
         "  description: \"" + youtubeinfo.Description + "\"\n" +
         "  thumbnailUrl: \"" + youtubeinfo.Thumbnails.High.URL + "\"\n" +
         "  image: \"" + youtubeinfo.Thumbnails.High.URL + "\"\n" +
-        "  vid: \"" + youtubeinfo.ID + "\"\n" +
+        "  vid: \"" + YoutubeResponse.Items[0].ID + "\"\n" +
         "  duration: \"PT54S\"\n" +
         "  hasPart:\n" +
         "      -\n" +
@@ -138,7 +161,7 @@ func main() {
         "\n" +
         youtubeinfo.Description + "\n" +
         "\n" +
-        "{{< youtubelazy " + youtubeinfo.ID + " \"" + title + "\" >}}"
+        "{{< youtubelazy " + YoutubeResponse.Items[0].ID + " \"" + title + "\" >}}"
 
     content := []byte(tm)
     errFile := ioutil.WriteFile(strings.ReplaceAll(title, " ", "_") + ".md", content, 0644)
