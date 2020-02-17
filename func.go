@@ -13,8 +13,17 @@ func sum(nums ...int) {
 	fmt.Println(total)
 }
 
-func main() {
+func split(sum int) (x, y int) {
+	x = sum * 4 / 9
+	y = sum - x
+	return
+}
 
+func main() {
+	var c, python, java bool
+	var n int
+	n = 10
+	num := 100
 	// Variadic functions can be called in the usual way
 	// with individual arguments.
 	sum(1, 2)
@@ -29,4 +38,8 @@ func main() {
 	empty := []string{}
 	fmt.Println("===")
 	fmt.Println(empty)
+	fmt.Println(c, python, java)
+	fmt.Println(n)
+	fmt.Println(num)
+	fmt.Println(split(9))
 }
