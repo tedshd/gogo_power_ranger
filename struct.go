@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type art struct {
 	name string
@@ -18,6 +21,16 @@ type NewUser struct {
 	ext              *art
 }
 
+type d4 struct {
+	name string `json:"name"`
+	date int64 `json:date`
+}
+
+type Point struct {
+    x float64
+    y float64
+}
+
 func main() {
 	arg := new(NewUser)
 	arg.Uid = 123
@@ -30,7 +43,33 @@ func main() {
 	arg.ext = update
 
 	run(arg)
+
+	fmt.Println("===")
+
 	fmt.Println(n())
+
+	fmt.Println("===")
+
+	d4Struct := d4{}
+	fmt.Println(d4Struct)
+
+	fmt.Println(reflect.TypeOf(d4Struct).Kind())
+
+	fmt.Println("===")
+
+	d4Array := []d4{}
+	d4Array = append(d4Array, d4{
+		name: "Ted",
+		date: 1234})
+	fmt.Println(d4Array)
+	fmt.Println(reflect.TypeOf(d4Array).Kind())
+
+	fmt.Println("===")
+
+	p := Point{x: 3.0, y: 4.0}
+
+    fmt.Println(p.x)
+    fmt.Println(p.y)
 }
 
 func run(arg *NewUser) {
